@@ -69,4 +69,11 @@ public class Sql {
         return (String) row.values().iterator().next();
     }
 
+    public Boolean selectBoolean() {
+        Map<String, Object> row = selectRow();
+        if (row == null) {
+            return null;
+        }
+        return (Boolean) row.values().iterator().next();
+    }
 }
