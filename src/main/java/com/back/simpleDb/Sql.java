@@ -55,4 +55,12 @@ public class Sql {
         }
         return (LocalDateTime) row.values().iterator().next();
     }
+
+    public Long selectLong() {
+        Map<String, Object> row = selectRow();
+        if (row == null) {
+            return null;
+        }
+        return (Long) row.values().iterator().next();
+    }
 }
