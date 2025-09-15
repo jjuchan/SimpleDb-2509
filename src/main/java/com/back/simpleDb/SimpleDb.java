@@ -2,8 +2,7 @@ package com.back.simpleDb;
 
 import lombok.SneakyThrows;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.*;
 
 public class SimpleDb {
 
@@ -26,7 +25,35 @@ public class SimpleDb {
         return connection;
     }
 
-    public void run(String sql, Object... params ) {
+    @SneakyThrows
+    public void run(String sql, Object... params) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    stmt.setObject(i + 1, params[i]);
+                }
+            }
+            stmt.execute();
+        }
+    }
 
+    public Sql genSql() {
+
+        return new Sql(this);
+    }
+
+    @SneakyThrows
+    public long insert(String sql, Object... params) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+            stmt.executeUpdate();
+
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if(rs.next()) return rs.getLong(1);
+            }
+        }
+        return -1;
     }
 }
