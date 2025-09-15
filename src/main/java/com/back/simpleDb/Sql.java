@@ -1,6 +1,9 @@
 package com.back.simpleDb;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +18,10 @@ public class Sql {
         this.simpleDb = simpleDb;
     }
 
-    public Sql append(String sql, Object ... values) {
+    public Sql append(String sql, Object... values) {
         query.append(sql).append(" ");
-        if(values != null) {
-            for(Object value : values) {
+        if (values != null) {
+            for (Object value : values) {
                 params.add(value);
             }
         }
@@ -43,5 +46,13 @@ public class Sql {
 
     public Map<String, Object> selectRow() {
         return simpleDb.selectRow(query.toString(), params.toArray());
+    }
+
+    public LocalDateTime selectDatetime() {
+        Map<String, Object> row = selectRow();
+        if (row == null) {
+            return null;
+        }
+        return (LocalDateTime) row.values().iterator().next();
     }
 }
