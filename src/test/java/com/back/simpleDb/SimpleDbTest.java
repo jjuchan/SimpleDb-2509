@@ -284,21 +284,21 @@ public class SimpleDbTest {
         assertThat(isBlind).isEqualTo(true);
     }
 
-//    @Test
-//    @DisplayName("selectBoolean, 3rd")
-//    public void t011() {
-//        Sql sql = simpleDb.genSql();
-//        /*
-//        == rawSql ==
-//        SELECT 1 = 0
-//        */
-//        sql.append("SELECT 1 = 0");
-//
-//        Boolean isBlind = sql.selectBoolean();
-//
-//        assertThat(isBlind).isEqualTo(false);
-//    }
-//
+    @Test
+    @DisplayName("selectBoolean, 3rd")
+    public void t011() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT 1 = 0
+        */
+        sql.append("SELECT 1 = 0");
+
+        Boolean isBlind = sql.selectBoolean();
+
+        assertThat(isBlind).isEqualTo(false);
+    }
+
 //    @Test
 //    @DisplayName("select, LIKE 사용법")
 //    public void t012() {
