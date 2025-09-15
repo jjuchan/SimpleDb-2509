@@ -74,6 +74,8 @@ public class Sql {
         if (row == null) {
             return null;
         }
-        return (Boolean) row.values().iterator().next();
+        Object value = row.values().iterator().next();
+
+        return ((Number) value).intValue() != 0;
     }
 }
