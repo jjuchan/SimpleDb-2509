@@ -40,4 +40,8 @@ public class Sql {
     public List<Map<String, Object>> selectRows() {
         return simpleDb.selectRows(query.toString(), params.toArray());
     }
+
+    public Map<String, Object> selectRow() {
+        return simpleDb.selectRow(query.toString(), params.toArray());
+    }
 }

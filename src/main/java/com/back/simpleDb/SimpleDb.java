@@ -13,7 +13,6 @@ public class SimpleDb {
     private Connection connection;
     private boolean devMode;
 
-
     @SneakyThrows
     public SimpleDb(String host, String username, String password, String dbName) {
         this.connection = DriverManager.getConnection(
@@ -23,10 +22,6 @@ public class SimpleDb {
 
     public void setDevMode(boolean devMode) {
         this.devMode = devMode;
-    }
-
-    public Connection getConnection() {
-        return connection;
     }
 
     @SneakyThrows
@@ -105,5 +100,12 @@ public class SimpleDb {
         }
 
         return rows;
+    }
+
+    @SneakyThrows
+    public Map<String, Object> selectRow(String sql, Object... params) {
+        List<Map<String, Object>> rows = selectRows(sql, params);
+        if (rows.isEmpty()) return null;
+        return rows.get(0);
     }
 }
