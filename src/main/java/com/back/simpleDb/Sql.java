@@ -3,6 +3,7 @@ package com.back.simpleDb;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Sql {
 
@@ -34,5 +35,9 @@ public class Sql {
 
     public int delete() {
         return simpleDb.delete(query.toString(), params.toArray());
+    }
+
+    public List<Map<String, Object>> selectRows() {
+        return simpleDb.selectRows(query.toString(), params.toArray());
     }
 }

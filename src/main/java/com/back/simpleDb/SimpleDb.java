@@ -3,6 +3,10 @@ package com.back.simpleDb;
 import lombok.SneakyThrows;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class SimpleDb {
 
@@ -76,5 +80,30 @@ public class SimpleDb {
             }
             return stmt.executeUpdate();
         }
+    }
+
+    @SneakyThrows
+    public List<Map<String, Object>> selectRows(String sql, Object... params) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        row.put(rsmd.getColumnName(i), rs.getObject(i));
+                    }
+                    rows.add(row);
+                }
+            }
+        }
+
+        return rows;
     }
 }
