@@ -1,8 +1,5 @@
 package com.back.simpleDb;
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,4 +60,13 @@ public class Sql {
         }
         return (Long) row.values().iterator().next();
     }
+
+    public String selectString() {
+        Map<String, Object> row = selectRow();
+        if (row == null) {
+            return null;
+        }
+        return (String) row.values().iterator().next();
+    }
+
 }
