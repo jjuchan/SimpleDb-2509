@@ -71,9 +71,19 @@ public class Sql {
 
     public Boolean selectBoolean() {
         Map<String, Object> row = selectRow();
-        if (row == null) {
+        if (row == null) return null;
+
+        Object value = row.values().iterator().next();
+
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        } else if (value instanceof Number) {
+            return ((Number) value).intValue() != 0;
+        } else if (value != null) {
+            return Boolean.parseBoolean(value.toString());
+        } else {
             return null;
         }
-        return (Boolean) row.values().iterator().next();
     }
+
 }
