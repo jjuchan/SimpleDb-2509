@@ -31,4 +31,8 @@ public class Sql {
     public int update() {
         return simpleDb.update(query.toString(), params.toArray());
     }
+
+    public int delete() {
+        return simpleDb.delete(query.toString(), params.toArray());
+    }
 }

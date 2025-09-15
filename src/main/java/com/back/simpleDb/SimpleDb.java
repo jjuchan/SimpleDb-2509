@@ -46,7 +46,7 @@ public class SimpleDb {
     public long insert(String sql, Object... params) {
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
+                stmt.setObject(i + 1, params[i]); // SQL은 1부터 시작
             }
             stmt.executeUpdate();
 
@@ -56,6 +56,7 @@ public class SimpleDb {
         }
         return -1;
     }
+
     @SneakyThrows
     public int update(String sql, Object... params) {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -65,5 +66,15 @@ public class SimpleDb {
             return stmt.executeUpdate();
         }
 
+    }
+
+    @SneakyThrows
+    public int delete(String sql, Object... params) {
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+            return stmt.executeUpdate();
+        }
     }
 }
