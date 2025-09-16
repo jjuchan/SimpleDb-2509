@@ -1,6 +1,7 @@
 package com.back.simpleDb;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +106,19 @@ public class Sql {
     public Map<String, Object> selectRow() {
         List<Map<String, Object>> rows = selectRows();
         return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public LocalDateTime selectDatetime() {
+        try (Connection conn = simpleDb.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
+             ResultSet rs = pstmt.executeQuery()) {
+
+            bindParametersAndLog(pstmt);
+
+            return rs.next() ? rs.getTimestamp(1).toLocalDateTime() : null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
