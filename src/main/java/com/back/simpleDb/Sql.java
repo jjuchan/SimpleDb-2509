@@ -2,7 +2,9 @@ package com.back.simpleDb;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Sql {
     private final SimpleDb simpleDb;
@@ -68,6 +70,33 @@ public class Sql {
 
             bindParametersAndLog(pstmt);
             return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public List<Map<String, Object>> selectRows() {
+        try (Connection conn = simpleDb.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            bindParametersAndLog(pstmt);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                List<Map<String, Object>> rows = new ArrayList<>();
+                ResultSetMetaData meta = rs.getMetaData();
+
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        Object value = rs.getObject(i);
+                        row.put(meta.getColumnName(i),
+                                value instanceof Timestamp ? ((Timestamp) value).toLocalDateTime() :
+                                        value instanceof byte[] && ((byte[]) value).length == 1 ? ((byte[]) value)[0] != 0 : value);
+                    }
+                    rows.add(row);
+                }
+                return rows;
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

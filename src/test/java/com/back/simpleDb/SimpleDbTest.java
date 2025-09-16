@@ -1,6 +1,10 @@
 package com.back.simpleDb;
 
 import org.junit.jupiter.api.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -126,5 +130,35 @@ public class SimpleDbTest {
         int affectedRowsCount = sql.delete();
 
         assertThat(affectedRowsCount).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("selectRows")
+    public void t004() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT *
+        FROM article
+        ORDER BY id ASC
+        LIMIT 3
+        */
+        sql.append("SELECT * FROM article ORDER BY id ASC LIMIT 3");
+        List<Map<String, Object>> articleRows = sql.selectRows();
+
+        IntStream.range(0, articleRows.size()).forEach(i -> {
+            long id = i + 1;
+
+            Map<String, Object> articleRow = articleRows.get(i);
+
+            assertThat(articleRow.get("id")).isEqualTo(id);
+            assertThat(articleRow.get("title")).isEqualTo("제목%d".formatted(id));
+            assertThat(articleRow.get("body")).isEqualTo("내용%d".formatted(id));
+            assertThat(articleRow.get("createdDate")).isInstanceOf(LocalDateTime.class);
+            assertThat(articleRow.get("createdDate")).isNotNull();
+            assertThat(articleRow.get("modifiedDate")).isInstanceOf(LocalDateTime.class);
+            assertThat(articleRow.get("modifiedDate")).isNotNull();
+            assertThat(articleRow.get("isBlind")).isEqualTo(false);
+        });
     }
 }
