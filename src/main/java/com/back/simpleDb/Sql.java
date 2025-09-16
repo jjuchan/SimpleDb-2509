@@ -23,12 +23,14 @@ public class Sql {
         return this;
     }
 
-    public Sql append(String sql, Object parameter) {
+    public Sql append(String sql, Object... parameter) {
         if (!sqlBuilder.isEmpty()) {
             sqlBuilder.append(" ");
         }
         sqlBuilder.append(sql);
-        parameters.add(parameter);
+        for (Object param : parameter) {
+            parameters.add(param);
+        }
         return this;
     }
 
@@ -36,24 +38,42 @@ public class Sql {
         try (Connection conn = simpleDb.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString(), Statement.RETURN_GENERATED_KEYS)) {
 
-            // 파라미터 설정
-            for (int i = 0; i < parameters.size(); i++) {
-                pstmt.setObject(i + 1, parameters.get(i));
-            }
-
-            // 개발 모드 로그
-            if (simpleDb.isDevMode()) {
-                System.out.println("== rawSql ==\n" + buildRawSql());
-            }
+            bindParametersAndLog(pstmt);
 
             pstmt.executeUpdate();
 
-            // 생성된 키 반환
             try (ResultSet rs = pstmt.getGeneratedKeys()) {
                 return rs.next() ? rs.getLong(1) : -1;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public int update() {
+        try (Connection conn = simpleDb.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            bindParametersAndLog(pstmt);
+
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     PreparedStatement에 파라미터를 바인딩하고 개발 모드일 때 로그를 출력하는 공통 메서드
+     **/
+    private void bindParametersAndLog(PreparedStatement pstmt) throws SQLException {
+        // 파라미터 설정
+        for (int i = 0; i < parameters.size(); i++) {
+            pstmt.setObject(i + 1, parameters.get(i));
+        }
+
+        // 개발 모드 로그
+        if (simpleDb.isDevMode()) {
+            System.out.println("== rawSql ==\n" + buildRawSql());
         }
     }
 
