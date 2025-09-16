@@ -1,12 +1,19 @@
 package com.back.simpleDb;
 
 import java.sql.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Map;
 
 public class SimpleDb {
     private final String url;
     private final String username;
     private final String password;
     private boolean devMode = false;
+
+    // ThreadLocal을 사용한 스레드별 커넥션 관리
+    private final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
+    // 모든 스레드의 커넥션을 추적하기 위한 맵
+    private final Map<Long, Connection> connectionMap = new ConcurrentHashMap<>();
 
     public SimpleDb(String host, String username, String password, String database) {
         this.url = "jdbc:mysql://" + host + ":3306/" + database + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
@@ -37,7 +44,30 @@ public class SimpleDb {
     }
 
     Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(url, username, password);
+        Connection conn = threadLocalConnection.get();
+        if (conn == null || conn.isClosed()) {
+            conn = DriverManager.getConnection(url, username, password);
+            threadLocalConnection.set(conn);
+            connectionMap.put(Thread.currentThread().getId(), conn);
+        }
+        return conn;
+    }
+
+    public void close() {
+        Connection conn = threadLocalConnection.get();
+        if (conn != null) {
+            try {
+                if (!conn.isClosed()) {
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                // 로그만 남기고 예외는 던지지 않음
+                System.err.println("Failed to close connection: " + e.getMessage());
+            } finally {
+                threadLocalConnection.remove();
+                connectionMap.remove(Thread.currentThread().getId());
+            }
+        }
     }
 
     boolean isDevMode() {
