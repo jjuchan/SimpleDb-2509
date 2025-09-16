@@ -391,31 +391,31 @@ public class SimpleDbTest {
         });
     }
 
-//    @Test
-//    @DisplayName("selectRow, Article")
-//    public void t016() {
-//        Sql sql = simpleDb.genSql();
-//        /*
-//        == rawSql ==
-//        SELECT *
-//        FROM article
-//        WHERE id = 1
-//        */
-//        sql.append("SELECT * FROM article WHERE id = 1");
-//        Article article = sql.selectRow(Article.class);
-//
-//        Long id = 1L;
-//
-//        assertThat(article.getId()).isEqualTo(id);
-//        assertThat(article.getTitle()).isEqualTo("제목%d".formatted(id));
-//        assertThat(article.getBody()).isEqualTo("내용%d".formatted(id));
-//        assertThat(article.getCreatedDate()).isInstanceOf(LocalDateTime.class);
-//        assertThat(article.getCreatedDate()).isNotNull();
-//        assertThat(article.getModifiedDate()).isInstanceOf(LocalDateTime.class);
-//        assertThat(article.getModifiedDate()).isNotNull();
-//        assertThat(article.isBlind()).isEqualTo(false);
-//    }
-//
+    @Test
+    @DisplayName("selectRow, Article")
+    public void t016() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT *
+        FROM article
+        WHERE id = 1
+        */
+        sql.append("SELECT * FROM article WHERE id = 1");
+        Article article = sql.selectRow(Article.class);
+
+        Long id = 1L;
+
+        assertThat(article.getId()).isEqualTo(id);
+        assertThat(article.getTitle()).isEqualTo("제목%d".formatted(id));
+        assertThat(article.getBody()).isEqualTo("내용%d".formatted(id));
+        assertThat(article.getCreatedDate()).isInstanceOf(LocalDateTime.class);
+        assertThat(article.getCreatedDate()).isNotNull();
+        assertThat(article.getModifiedDate()).isInstanceOf(LocalDateTime.class);
+        assertThat(article.getModifiedDate()).isNotNull();
+        assertThat(article.isBlind()).isEqualTo(false);
+    }
+
 //    // 테스트 메서드를 정의하고, 테스트 이름을 지정합니다.
 //    @Test
 //    @DisplayName("use in multi threading")

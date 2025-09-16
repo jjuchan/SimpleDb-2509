@@ -52,6 +52,10 @@ public class Sql {
         return simpleDb.selectRows(query.toString(), params.toArray(), type);
     }
 
+    public <T> T selectRow(Class<T> type) {
+        return simpleDb.selectRow(query.toString(), params.toArray(), type);
+    }
+
     public LocalDateTime selectDatetime() {
         Map<String, Object> row = selectRow();
         if (row == null) {
