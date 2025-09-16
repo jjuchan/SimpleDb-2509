@@ -228,4 +228,9 @@ public class Sql {
             return objects;
         });
     }
+
+    public <T> T selectRow(Class<T> clazz) {
+        List<T> rows = selectRows(clazz);
+        return rows.isEmpty() ? null : rows.get(0);
+    }
 }
