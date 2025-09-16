@@ -141,4 +141,11 @@ public class SimpleDb {
 
         return rows;
     }
+
+    @SneakyThrows
+    public <T> T selectRow(String sql, Object[] params, Class<T> type) {
+        List<T> list = selectRows(sql, params, type);
+        if (list.isEmpty()) return null;
+        return list.get(0);
+    }
 }
