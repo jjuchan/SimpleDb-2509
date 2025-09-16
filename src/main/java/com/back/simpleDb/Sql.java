@@ -62,8 +62,19 @@ public class Sql {
         }
     }
 
+    public int delete() {
+        try (Connection conn = simpleDb.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+
+            bindParametersAndLog(pstmt);
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
-     PreparedStatement에 파라미터를 바인딩하고 개발 모드일 때 로그를 출력하는 공통 메서드
+     * PreparedStatement에 파라미터를 바인딩하고 개발 모드일 때 로그를 출력하는 공통 메서드
      **/
     private void bindParametersAndLog(PreparedStatement pstmt) throws SQLException {
         // 파라미터 설정
