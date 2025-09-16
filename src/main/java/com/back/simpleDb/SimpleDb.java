@@ -1,5 +1,6 @@
 package com.back.simpleDb;
 
+import com.back.Article;
 import lombok.SneakyThrows;
 
 import java.sql.*;
@@ -107,5 +108,37 @@ public class SimpleDb {
         List<Map<String, Object>> rows = selectRows(sql, params);
         if (rows.isEmpty()) return null;
         return rows.get(0);
+    }
+
+    @SneakyThrows
+    public <T> List<T> selectRows(String sql, Object[] params, Class<T> type) {
+        List<T> rows = new ArrayList<>();
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                ResultSetMetaData rsmd = rs.getMetaData();
+                int columnCount = rsmd.getColumnCount();
+
+                while (rs.next()) {
+                    T instance = type.getDeclaredConstructor().newInstance();
+
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = rsmd.getColumnLabel(i);
+                        Object value = rs.getObject(i);
+
+                        var field = type.getDeclaredField(columnName);
+                        field.setAccessible(true);
+                        field.set(instance, value);
+                    }
+                    rows.add(instance);
+                }
+            }
+        }
+
+        return rows;
     }
 }
