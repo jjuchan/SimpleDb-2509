@@ -137,11 +137,13 @@ public class Sql {
      */
     private <T> T executeSelect(ResultProcessor<T> processor) {
         try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
-             ResultSet rs = pstmt.executeQuery()) {
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
 
             bindParametersAndLog(pstmt);
-            return processor.process(rs);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return processor.process(rs);
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
