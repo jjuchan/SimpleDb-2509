@@ -320,25 +320,25 @@ public class SimpleDbTest {
         assertThat(count).isEqualTo(3);
     }
 
-//    @Test
-//    @DisplayName("appendIn")
-//    public void t013() {
-//        Sql sql = simpleDb.genSql();
-//        /*
-//        == rawSql ==
-//        SELECT COUNT(*)
-//        FROM article
-//        WHERE id IN ('1', '2', '3')
-//        */
-//        sql.append("SELECT COUNT(*)")
-//                .append("FROM article")
-//                .appendIn("WHERE id IN (?)", 1, 2, 3);
-//
-//        long count = sql.selectLong();
-//
-//        assertThat(count).isEqualTo(3);
-//    }
-//
+    @Test
+    @DisplayName("appendIn")
+    public void t013() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT COUNT(*)
+        FROM article
+        WHERE id IN ('1', '2', '3')
+        */
+        sql.append("SELECT COUNT(*)")
+                .append("FROM article")
+                .appendIn("WHERE id IN (?)", 1, 2, 3);
+
+        long count = sql.selectLong();
+
+        assertThat(count).isEqualTo(3);
+    }
+
 //    @Test
 //    @DisplayName("selectLongs, ORDER BY FIELD 사용법")
 //    public void t014() {

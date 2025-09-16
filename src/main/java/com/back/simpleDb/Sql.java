@@ -90,4 +90,28 @@ public class Sql {
         }
     }
 
+    public Sql appendIn(String sql, int... values) {
+        StringBuilder inMapping = new StringBuilder();
+
+        int questionMarkIndex = sql.indexOf("?");
+        if (questionMarkIndex != -1) {
+            inMapping.append(sql, 0, questionMarkIndex);
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            inMapping.append("?");
+            if (i < values.length - 1) inMapping.append(",");
+        }
+
+        inMapping.append(") ");
+
+        this.query.append(inMapping.toString());
+
+        for (int value : values) {
+            this.params.add(value);
+        }
+
+        return this;
+    }
+
 }
