@@ -116,8 +116,19 @@ public class Sql {
         return executeSelect(rs -> {
             if (!rs.next()) return null;
             Object value = rs.getObject(1);
-            return value instanceof byte[] && ((byte[]) value).length == 1 ? ((byte[]) value)[0] != 0 :
-                    value instanceof Boolean ? (Boolean) value : null;
+            // MySQL BIT(1) 처리: byte[]{0} → false, byte[]{1} → true
+            if (value instanceof byte[] && ((byte[]) value).length == 1) {
+                return ((byte[]) value)[0] != 0;
+            }
+            // 이미 Boolean인 경우
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            }
+            // MySQL 연산 결과 처리: 1 = true, 0 = false
+            if (value instanceof Number) {
+                return ((Number) value).intValue() != 0;
+            }
+            return null;
         });
     }
 
