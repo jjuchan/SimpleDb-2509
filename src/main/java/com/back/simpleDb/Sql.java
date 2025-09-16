@@ -2,6 +2,7 @@ package com.back.simpleDb;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -90,28 +91,51 @@ public class Sql {
         }
     }
 
-    public Sql appendIn(String sql, int... values) {
+    public Sql appendIn(String sql, Object... values) {
         StringBuilder inMapping = new StringBuilder();
 
         int questionMarkIndex = sql.indexOf("?");
         if (questionMarkIndex != -1) {
             inMapping.append(sql, 0, questionMarkIndex);
+        } else {
+            inMapping.append(sql);
         }
 
         for (int i = 0; i < values.length; i++) {
             inMapping.append("?");
             if (i < values.length - 1) inMapping.append(",");
         }
-
         inMapping.append(") ");
 
         this.query.append(inMapping.toString());
 
-        for (int value : values) {
-            this.params.add(value);
+
+        for (Object value : values) {
+            if (sql.trim().toUpperCase().startsWith("ORDER BY FIELD")) {
+                break;
+            }
+
+            if (value != null && value.getClass().isArray() && value instanceof Object[] arr) {
+                Collections.addAll(this.params, arr);
+            } else {
+                this.params.add(value);
+            }
         }
 
+
         return this;
+    }
+
+
+    public List<Long> selectLongs() {
+        Object[] ids = this.params.toArray();
+        List<Long> longs = new ArrayList<>();
+        for (Object id : ids) {
+            if (id instanceof Long) {
+                longs.add((Long) id);
+            }
+        }
+        return longs;
     }
 
 }
