@@ -121,6 +121,19 @@ public class Sql {
         }
     }
 
+    public Long selectLong() {
+        try (Connection conn = simpleDb.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
+             ResultSet rs = pstmt.executeQuery()) {
+
+            bindParametersAndLog(pstmt);
+
+            return rs.next() ? rs.getLong(1) : null;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * PreparedStatement에 파라미터를 바인딩하고 개발 모드일 때 로그를 출력하는 공통 메서드
      **/
