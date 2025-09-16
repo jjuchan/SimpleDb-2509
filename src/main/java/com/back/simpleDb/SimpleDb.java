@@ -14,6 +14,8 @@ public class SimpleDb {
     private final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
     // 모든 스레드의 커넥션을 추적하기 위한 맵
     private final Map<Long, Connection> connectionMap = new ConcurrentHashMap<>();
+    // 트랜잭션 상태 관리
+    private final ThreadLocal<Boolean> transactionStatus = new ThreadLocal<>();
 
     public SimpleDb(String host, String username, String password, String database) {
         this.url = "jdbc:mysql://" + host + ":3306/" + database + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
@@ -49,8 +51,50 @@ public class SimpleDb {
             conn = DriverManager.getConnection(url, username, password);
             threadLocalConnection.set(conn);
             connectionMap.put(Thread.currentThread().getId(), conn);
+
+            // 트랜잭션 상태가 있으면 autoCommit을 false로 설정
+            Boolean inTransaction = transactionStatus.get();
+            if (inTransaction != null && inTransaction) {
+                conn.setAutoCommit(false);
+            }
         }
         return conn;
+    }
+
+    public void startTransaction() {
+        try {
+            Connection conn = getConnection();
+            conn.setAutoCommit(false);
+            transactionStatus.set(true);
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to start transaction", e);
+        }
+    }
+
+    public void commit() {
+        try {
+            Connection conn = threadLocalConnection.get();
+            if (conn != null && !conn.isClosed()) {
+                conn.commit();
+                conn.setAutoCommit(true);
+            }
+            transactionStatus.remove();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to commit transaction", e);
+        }
+    }
+
+    public void rollback() {
+        try {
+            Connection conn = threadLocalConnection.get();
+            if (conn != null && !conn.isClosed()) {
+                conn.rollback();
+                conn.setAutoCommit(true);
+            }
+            transactionStatus.remove();
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to rollback transaction", e);
+        }
     }
 
     public void close() {
@@ -66,6 +110,7 @@ public class SimpleDb {
             } finally {
                 threadLocalConnection.remove();
                 connectionMap.remove(Thread.currentThread().getId());
+                transactionStatus.remove();
             }
         }
     }
