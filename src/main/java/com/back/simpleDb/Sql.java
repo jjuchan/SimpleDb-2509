@@ -55,10 +55,14 @@ public class Sql {
 
     public Long selectLong() {
         Map<String, Object> row = selectRow();
-        if (row == null) {
-            return null;
+        if (row == null) return null;
+
+        Object value = row.values().iterator().next();
+
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
         }
-        return (Long) row.values().iterator().next();
+        return null;
     }
 
     public String selectString() {
