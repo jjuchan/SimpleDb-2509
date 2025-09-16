@@ -19,21 +19,27 @@ public class Sql {
     }
 
     public Sql append(String sql) {
-        if (!sqlBuilder.isEmpty()) {
-            sqlBuilder.append(" ");
-        }
+        if (!sqlBuilder.isEmpty()) sqlBuilder.append(" ");
         sqlBuilder.append(sql);
         return this;
     }
 
     public Sql append(String sql, Object... parameter) {
-        if (!sqlBuilder.isEmpty()) {
-            sqlBuilder.append(" ");
-        }
+        if (!sqlBuilder.isEmpty()) sqlBuilder.append(" ");
         sqlBuilder.append(sql);
         for (Object param : parameter) {
             parameters.add(param);
         }
+        return this;
+    }
+
+    public Sql appendIn(String sql, Object... values) {
+        if (!sqlBuilder.isEmpty()) sqlBuilder.append(" ");
+
+        String placeholders = String.join(", ", java.util.Collections.nCopies(values.length, "?"));
+        sqlBuilder.append(sql.replace("?", placeholders));
+        java.util.Collections.addAll(parameters, values);
+
         return this;
     }
 
