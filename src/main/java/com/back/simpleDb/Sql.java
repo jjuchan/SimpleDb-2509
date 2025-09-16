@@ -112,6 +112,15 @@ public class Sql {
         return executeSelect(rs -> rs.next() ? rs.getString(1) : null);
     }
 
+    public Boolean selectBoolean() {
+        return executeSelect(rs -> {
+            if (!rs.next()) return null;
+            Object value = rs.getObject(1);
+            return value instanceof byte[] && ((byte[]) value).length == 1 ? ((byte[]) value)[0] != 0 :
+                    value instanceof Boolean ? (Boolean) value : null;
+        });
+    }
+
     /**
      * SELECT 쿼리 실행을 위한 공통 메서드
      */
