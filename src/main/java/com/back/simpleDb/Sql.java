@@ -102,6 +102,11 @@ public class Sql {
         }
     }
 
+    public Map<String, Object> selectRow() {
+        List<Map<String, Object>> rows = selectRows();
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
     /**
      * PreparedStatement에 파라미터를 바인딩하고 개발 모드일 때 로그를 출력하는 공통 메서드
      **/
