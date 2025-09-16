@@ -196,4 +196,36 @@ public class Sql {
         }
         return result;
     }
+
+    public <T> List<T> selectRows(Class<T> clazz) {
+        return executeSelect(rs -> {
+            List<T> objects = new ArrayList<>();
+            ResultSetMetaData meta = rs.getMetaData();
+
+            while (rs.next()) {
+                try {
+                    T obj = clazz.getDeclaredConstructor().newInstance();
+                    for (int i = 1; i <= meta.getColumnCount(); i++) {
+                        Object value = rs.getObject(i);
+
+                        if (value instanceof Timestamp) value = ((Timestamp) value).toLocalDateTime();
+                        if (value instanceof byte[] && ((byte[]) value).length == 1) value = ((byte[]) value)[0] != 0;
+
+                        String setter = "set" + meta.getColumnName(i).substring(0, 1).toUpperCase() + meta.getColumnName(i).substring(1);
+                        if (setter.equals("setIsBlind")) setter = "setBlind";
+
+                        if (value != null) {
+                            try {
+                                obj.getClass().getMethod(setter, value.getClass()).invoke(obj, value);
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                    objects.add(obj);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to create instance of " + clazz.getSimpleName(), e);
+                }
+            }
+            return objects;
+        });
+    }
 }
