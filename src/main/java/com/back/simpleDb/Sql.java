@@ -138,6 +138,16 @@ public class Sql {
         });
     }
 
+    public List<Long> selectLongs() {
+        return executeSelect(rs -> {
+            List<Long> longs = new ArrayList<>();
+            while (rs.next()) {
+                longs.add(rs.getLong(1));
+            }
+            return longs;
+        });
+    }
+
     /**
      * SELECT 쿼리 실행을 위한 공통 메서드
      */
