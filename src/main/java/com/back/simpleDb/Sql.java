@@ -77,30 +77,22 @@ public class Sql {
     }
 
     public List<Map<String, Object>> selectRows() {
-        try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+        return executeSelect(rs -> {
+            List<Map<String, Object>> rows = new ArrayList<>();
+            ResultSetMetaData meta = rs.getMetaData();
 
-            bindParametersAndLog(pstmt);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                List<Map<String, Object>> rows = new ArrayList<>();
-                ResultSetMetaData meta = rs.getMetaData();
-
-                while (rs.next()) {
-                    Map<String, Object> row = new HashMap<>();
-                    for (int i = 1; i <= meta.getColumnCount(); i++) {
-                        Object value = rs.getObject(i);
-                        row.put(meta.getColumnName(i),
-                                value instanceof Timestamp ? ((Timestamp) value).toLocalDateTime() :
-                                        value instanceof byte[] && ((byte[]) value).length == 1 ? ((byte[]) value)[0] != 0 : value);
-                    }
-                    rows.add(row);
+            while (rs.next()) {
+                Map<String, Object> row = new HashMap<>();
+                for (int i = 1; i <= meta.getColumnCount(); i++) {
+                    Object value = rs.getObject(i);
+                    row.put(meta.getColumnName(i),
+                            value instanceof Timestamp ? ((Timestamp) value).toLocalDateTime() :
+                                    value instanceof byte[] && ((byte[]) value).length == 1 ? ((byte[]) value)[0] != 0 : value);
                 }
-                return rows;
+                rows.add(row);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+            return rows;
+        });
     }
 
     public Map<String, Object> selectRow() {
@@ -109,29 +101,35 @@ public class Sql {
     }
 
     public LocalDateTime selectDatetime() {
+        return executeSelect(rs -> rs.next() ? rs.getTimestamp(1).toLocalDateTime() : null);
+    }
+
+    public Long selectLong() {
+        return executeSelect(rs -> rs.next() ? rs.getLong(1) : null);
+    }
+
+    public String selectString() {
+        return executeSelect(rs -> rs.next() ? rs.getString(1) : null);
+    }
+
+    /**
+     * SELECT 쿼리 실행을 위한 공통 메서드
+     */
+    private <T> T executeSelect(ResultProcessor<T> processor) {
         try (Connection conn = simpleDb.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
              ResultSet rs = pstmt.executeQuery()) {
 
             bindParametersAndLog(pstmt);
-
-            return rs.next() ? rs.getTimestamp(1).toLocalDateTime() : null;
+            return processor.process(rs);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public Long selectLong() {
-        try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString());
-             ResultSet rs = pstmt.executeQuery()) {
-
-            bindParametersAndLog(pstmt);
-
-            return rs.next() ? rs.getLong(1) : null;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    @FunctionalInterface
+    private interface ResultProcessor<T> {
+        T process(ResultSet rs) throws SQLException;
     }
 
     /**

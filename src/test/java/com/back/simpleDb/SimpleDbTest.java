@@ -221,4 +221,23 @@ public class SimpleDbTest {
 
         assertThat(id).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("selectString")
+    public void t008() {
+        Sql sql = simpleDb.genSql();
+        /*
+        == rawSql ==
+        SELECT title
+        FROM article
+        WHERE id = 1
+        */
+        sql.append("SELECT title")
+                .append("FROM article")
+                .append("WHERE id = 1");
+
+        String title = sql.selectString();
+
+        assertThat(title).isEqualTo("제목1");
+    }
 }
