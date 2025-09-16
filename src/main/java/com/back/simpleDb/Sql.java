@@ -36,23 +36,32 @@ public class Sql {
     public Sql appendIn(String sql, Object... values) {
         if (!sqlBuilder.isEmpty()) sqlBuilder.append(" ");
 
-        String placeholders = String.join(", ", java.util.Collections.nCopies(values.length, "?"));
-        sqlBuilder.append(sql.replace("?", placeholders));
-        java.util.Collections.addAll(parameters, values);
+        // VALUES 절 특별 처리: VALUES (NOW(), NOW(), ?) 형태에서 ? 뒤에 추가 ? 생성
+        if (sql.contains("VALUES") && sql.endsWith("?)")) {
+            // ? 하나를 여러 개의 ?로 확장
+            String additionalPlaceholders = String.join(", ", java.util.Collections.nCopies(values.length - 1, "?"));
+            String modifiedSql = sql.replace("?)", "?, " + additionalPlaceholders + ")");
+            sqlBuilder.append(modifiedSql);
+        } else {
+            // 기존 IN 절 로직: 하나의 ?를 여러 개로 확장
+            String placeholders = String.join(", ", java.util.Collections.nCopies(values.length, "?"));
+            sqlBuilder.append(sql.replace("?", placeholders));
+        }
 
+        java.util.Collections.addAll(parameters, values);
         return this;
     }
 
     public long insert() {
-        try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString(), Statement.RETURN_GENERATED_KEYS)) {
+        try {
+            Connection conn = simpleDb.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString(), Statement.RETURN_GENERATED_KEYS)) {
+                bindParametersAndLog(pstmt);
+                pstmt.executeUpdate();
 
-            bindParametersAndLog(pstmt);
-
-            pstmt.executeUpdate();
-
-            try (ResultSet rs = pstmt.getGeneratedKeys()) {
-                return rs.next() ? rs.getLong(1) : -1;
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    return rs.next() ? rs.getLong(1) : -1;
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -60,23 +69,24 @@ public class Sql {
     }
 
     public int update() {
-        try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
-
-            bindParametersAndLog(pstmt);
-
-            return pstmt.executeUpdate();
+        try {
+            Connection conn = simpleDb.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+                bindParametersAndLog(pstmt);
+                return pstmt.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public int delete() {
-        try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
-
-            bindParametersAndLog(pstmt);
-            return pstmt.executeUpdate();
+        try {
+            Connection conn = simpleDb.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+                bindParametersAndLog(pstmt);
+                return pstmt.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -152,13 +162,14 @@ public class Sql {
      * SELECT 쿼리 실행을 위한 공통 메서드
      */
     private <T> T executeSelect(ResultProcessor<T> processor) {
-        try (Connection conn = simpleDb.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+        try {
+            Connection conn = simpleDb.getConnection();
+            try (PreparedStatement pstmt = conn.prepareStatement(sqlBuilder.toString())) {
+                bindParametersAndLog(pstmt);
 
-            bindParametersAndLog(pstmt);
-
-            try (ResultSet rs = pstmt.executeQuery()) {
-                return processor.process(rs);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    return processor.process(rs);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
