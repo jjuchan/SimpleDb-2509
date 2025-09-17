@@ -1,7 +1,8 @@
 package com.back.simpleDb;
 
-import com.back.Article;
+import lombok.SneakyThrows;
 
+import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ public class Sql {
     private SimpleDb simpleDb;
     private final StringBuilder query = new StringBuilder();
     private final List<Object> params = new ArrayList<>();
+
 
     public Sql(SimpleDb simpleDb) {
         this.simpleDb = simpleDb;
@@ -131,8 +133,6 @@ public class Sql {
                 this.params.add(value);
             }
         }
-
-
         return this;
     }
 
@@ -147,5 +147,7 @@ public class Sql {
         }
         return longs;
     }
+
+
 
 }
