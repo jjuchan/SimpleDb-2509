@@ -42,16 +42,13 @@ public class SimpleDb {
     }
 
     public Sql genSql() {
-
         return new Sql(this);
     }
 
     @SneakyThrows
     public long insert(String sql, Object... params) {
         try (PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]); // SQL은 1부터 시작
-            }
+            setParameters(stmt, params);
             stmt.executeUpdate();
 
             try (ResultSet rs = stmt.getGeneratedKeys()) {
@@ -64,20 +61,15 @@ public class SimpleDb {
     @SneakyThrows
     public int update(String sql, Object... params) {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
-            }
+            setParameters(stmt, params);
             return stmt.executeUpdate();
         }
-
     }
 
     @SneakyThrows
     public int delete(String sql, Object... params) {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
-            }
+            setParameters(stmt, params);
             return stmt.executeUpdate();
         }
     }
@@ -87,9 +79,8 @@ public class SimpleDb {
         List<Map<String, Object>> rows = new ArrayList<>();
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
-            }
+            setParameters(stmt, params);
+
             try (ResultSet rs = stmt.executeQuery()) {
                 ResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
@@ -119,9 +110,7 @@ public class SimpleDb {
         List<T> rows = new ArrayList<>();
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
-            }
+            setParameters(stmt, params);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 ResultSetMetaData rsmd = rs.getMetaData();
