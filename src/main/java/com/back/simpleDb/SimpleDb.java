@@ -13,6 +13,7 @@ public class SimpleDb {
 
     private Connection connection;
     private boolean devMode;
+    private final ThreadLocal<Connection> threadLocal = new ThreadLocal<>();
 
     @SneakyThrows
     public SimpleDb(String host, String username, String password, String dbName) {
@@ -147,5 +148,14 @@ public class SimpleDb {
         List<T> list = selectRows(sql, params, type);
         if (list.isEmpty()) return null;
         return list.get(0);
+    }
+
+    @SneakyThrows
+    public void close() {
+        Connection connection = threadLocal.get();
+        if (connection != null && !connection.isClosed()) {
+            connection.close();
+            threadLocal.remove();
+        }
     }
 }
