@@ -1,6 +1,5 @@
 package com.back.simpleDb;
 
-import com.back.Article;
 import lombok.SneakyThrows;
 
 import java.sql.*;
@@ -157,5 +156,17 @@ public class SimpleDb {
             connection.close();
             threadLocal.remove();
         }
+    }
+
+    @SneakyThrows
+    public void startTransaction() {
+        connection.setAutoCommit(false);
+    }
+
+    @SneakyThrows
+    public void rollback() {
+        connection.rollback();
+        connection.setAutoCommit(true);
+
     }
 }
