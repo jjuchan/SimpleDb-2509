@@ -28,12 +28,16 @@ public class SimpleDb {
     @SneakyThrows
     public void run(String sql, Object... params) {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    stmt.setObject(i + 1, params[i]);
-                }
-            }
+            setParameters(stmt, params);
             stmt.execute();
+        }
+    }
+
+    private void setParameters(PreparedStatement stmt, Object... params) throws SQLException {
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                stmt.setObject(i + 1, params[i]);
+            }
         }
     }
 

@@ -1,8 +1,5 @@
 package com.back.simpleDb;
 
-import lombok.SneakyThrows;
-
-import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -147,7 +144,6 @@ public class Sql {
         }
         return longs;
     }
-
 
 
 }
