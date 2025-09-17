@@ -169,4 +169,10 @@ public class SimpleDb {
         connection.setAutoCommit(true);
 
     }
+
+    @SneakyThrows
+    public void commit() {
+        connection.commit();
+        connection.setAutoCommit(true);
+    }
 }
