@@ -1,10 +1,7 @@
 package com.back.simpleDb;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Sql {
     private final SimpleDb simpleDb;
@@ -27,8 +24,7 @@ public class Sql {
 
     public Sql append(String sql, Object... params) {
         append(sql);
-        // addAll 메서드는 어디서 제공되는것이고, 어떤 기능인가?
-        // 배열과 리스트 차이점은?
+        // addAll: 다른 컬렉션의 모든 요소를 현재 리스트에 추가
         parameters.addAll(Arrays.asList(params));
         return this;
     }
@@ -99,5 +95,81 @@ public class Sql {
         } catch (SQLException e) {
             throw new RuntimeException("SQL 실행 오류");
         }
+    }
+
+    /*
+    여러 행을 Map 리스트로 조회
+
+    구현 로직:
+    1. executeQuery()로 SELECT 실행
+    2. ResultSet의 각 행을 Map으로 변환
+    3. 모든 행을 List에 담아 반환
+
+    executeQuery(): SELECT 전용, ResultSet 반환
+    ResultSet.next(): 다음 행으로 이동, 없으면 false
+    LinkedHashMap: 컬럼 순서 유지
+    */
+    public List<Map<String, Object>> selectRows() {
+        List<Map<String, Object>> rows = new ArrayList<>();
+
+        try {
+            Connection conn = simpleDb.getSqlConnection();
+            String sql = sqlBuilder.toString();
+
+            if (simpleDb.isDevMode()) {
+                System.out.println("SQL: " + sql);
+                System.out.println("Parameters: " + parameters);
+            }
+
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                setParameters(pstmt);
+
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    while (rs.next()) {
+                        rows.add(resultSetToMap(rs));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("SELECT 오류 발생");
+        }
+
+        return rows;
+    }
+
+    /*
+    구현 로직:
+    1. selectRows() 호출
+    2. 첫 번째 행 반환 (없으면 null)
+    */
+    public Map<String, Object> selectRow() {
+        List<Map<String, Object>> rows = selectRows();
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    /*
+    ResultSet을 Map으로 변환
+
+    구현 로직:
+    1. ResultSetMetaData로 컬럼 정보 가져오기
+    2. 각 컬럼 이름과 값을 Map에 저장
+
+    - ResultSetMetaData: 컬럼 이름, 타입, 개수 등 메타정보
+    - getColumnCount(): 컬럼 개수
+    - getColumnName(i): i번째 컬럼명 (1부터 시작)
+    - getObject(i): i번째 컬럼 값 (타입 매핑 자동)
+    */
+    private Map<String, Object> resultSetToMap(ResultSet rs) throws SQLException {
+        Map<String, Object> map = new LinkedHashMap<>();
+        ResultSetMetaData metaData = rs.getMetaData();
+        int columnCount = metaData.getColumnCount();
+
+        for (int i = 1; i <= columnCount; i++) {
+            String columnName = metaData.getColumnName(i);
+            Object value = rs.getObject(i);
+            map.put(columnName, value);
+        }
+
+        return map;
     }
 }
