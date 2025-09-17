@@ -168,7 +168,7 @@ public class SimpleDb {
     }
 
     // SQL conneciton 간접 접근용
-    Connection getSqlConnection() throws SQLException {
+    public Connection getSqlConnection() throws SQLException {
         return getConnection();
     }
     
