@@ -36,14 +36,11 @@ public class Sql {
     public Sql appendIn(String sql, Object... values) {
         if (!sqlBuilder.isEmpty()) sqlBuilder.append(" ");
 
-        // VALUES 절 특별 처리: VALUES (NOW(), NOW(), ?) 형태에서 ? 뒤에 추가 ? 생성
         if (sql.contains("VALUES") && sql.endsWith("?)")) {
-            // ? 하나를 여러 개의 ?로 확장
             String additionalPlaceholders = String.join(", ", java.util.Collections.nCopies(values.length - 1, "?"));
             String modifiedSql = sql.replace("?)", "?, " + additionalPlaceholders + ")");
             sqlBuilder.append(modifiedSql);
         } else {
-            // 기존 IN 절 로직: 하나의 ?를 여러 개로 확장
             String placeholders = String.join(", ", java.util.Collections.nCopies(values.length, "?"));
             sqlBuilder.append(sql.replace("?", placeholders));
         }
@@ -132,15 +129,12 @@ public class Sql {
         return executeSelect(rs -> {
             if (!rs.next()) return null;
             Object value = rs.getObject(1);
-            // MySQL BIT(1) 처리: byte[]{0} → false, byte[]{1} → true
             if (value instanceof byte[] && ((byte[]) value).length == 1) {
                 return ((byte[]) value)[0] != 0;
             }
-            // 이미 Boolean인 경우
             if (value instanceof Boolean) {
                 return (Boolean) value;
             }
-            // MySQL 연산 결과 처리: 1 = true, 0 = false
             if (value instanceof Number) {
                 return ((Number) value).intValue() != 0;
             }
@@ -158,9 +152,6 @@ public class Sql {
         });
     }
 
-    /**
-     * SELECT 쿼리 실행을 위한 공통 메서드
-     */
     private <T> T executeSelect(ResultProcessor<T> processor) {
         try {
             Connection conn = simpleDb.getConnection();
@@ -181,16 +172,11 @@ public class Sql {
         T process(ResultSet rs) throws SQLException;
     }
 
-    /**
-     * PreparedStatement에 파라미터를 바인딩하고 개발 모드일 때 로그를 출력하는 공통 메서드
-     **/
     private void bindParametersAndLog(PreparedStatement pstmt) throws SQLException {
-        // 파라미터 설정
         for (int i = 0; i < parameters.size(); i++) {
             pstmt.setObject(i + 1, parameters.get(i));
         }
 
-        // 개발 모드 로그
         if (simpleDb.isDevMode()) {
             System.out.println("== rawSql ==\n" + buildRawSql());
         }

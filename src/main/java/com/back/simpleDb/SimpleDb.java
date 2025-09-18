@@ -10,11 +10,8 @@ public class SimpleDb {
     private final String password;
     private boolean devMode = false;
 
-    // ThreadLocal을 사용한 스레드별 커넥션 관리
     private final ThreadLocal<Connection> threadLocalConnection = new ThreadLocal<>();
-    // 모든 스레드의 커넥션을 추적하기 위한 맵
     private final Map<Long, Connection> connectionMap = new ConcurrentHashMap<>();
-    // 트랜잭션 상태 관리
     private final ThreadLocal<Boolean> transactionStatus = new ThreadLocal<>();
 
     public SimpleDb(String host, String username, String password, String database) {
@@ -52,7 +49,6 @@ public class SimpleDb {
             threadLocalConnection.set(conn);
             connectionMap.put(Thread.currentThread().getId(), conn);
 
-            // 트랜잭션 상태가 있으면 autoCommit을 false로 설정
             Boolean inTransaction = transactionStatus.get();
             if (inTransaction != null && inTransaction) {
                 conn.setAutoCommit(false);
@@ -105,7 +101,6 @@ public class SimpleDb {
                     conn.close();
                 }
             } catch (SQLException e) {
-                // 로그만 남기고 예외는 던지지 않음
                 System.err.println("Failed to close connection: " + e.getMessage());
             } finally {
                 threadLocalConnection.remove();
