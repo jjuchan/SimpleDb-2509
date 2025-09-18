@@ -1,5 +1,8 @@
 package com.back.simpleDb;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -309,5 +312,42 @@ public class Sql {
         parameters.addAll(Arrays.asList(params));
 
         return this;
+    }
+
+    /*
+    여러 행을 객체 리스트로 조회
+
+    구현 로직:
+    1. selectRows()로 Map 리스트 조회
+    2. Jackson ObjectMapper로 각 Map을 지정된 클래스 객체로 변환
+    3. 변환된 객체들을 리스트에 담아 반환
+
+    - ObjectMapper.convertValue(): Map → 객체 자동 변환
+    */
+    public <T> List<T> selectRows(Class<T> cls) {
+        List<Map<String, Object>> mapRows = selectRows();
+        List<T> result = new ArrayList<>();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());  // LocalDateTime 지원
+
+        for (Map<String, Object> row : mapRows) {
+            T obj = mapper.convertValue(row, cls);
+            result.add(obj);
+        }
+
+        return result;
+    }
+
+    /*
+    단일 행을 객체로 조회
+
+    구현 로직:
+    1. selectRows(cls) 호출
+    2. 첫 번째 객체 반환 (없으면 null)
+    */
+    public <T> T selectRow(Class<T> cls) {
+        List<T> rows = selectRows(cls);
+        return rows.isEmpty() ? null : rows.get(0);
     }
 }
