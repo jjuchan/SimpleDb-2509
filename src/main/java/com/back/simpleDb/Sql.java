@@ -278,4 +278,36 @@ public class Sql {
 
         return result;
     }
+
+    /*
+    IN절 처리 메서드
+
+    구현 로직:
+    1. 파라미터 개수만큼 ? 생성
+    2. SQL의 첫 번째 ?를 생성한 플레이스홀더들로 치환
+    3. 파라미터들을 리스트에 추가
+
+    - Collections.nCopies(n, "?"): "?"를 n개 복사한 리스트 생성
+    - String.join(", ", list): 리스트 요소를 ", "로 연결
+    - replaceFirst("\\?", replacement): 첫 번째 ? 치환 (정규식이라 \\ 필요)
+
+    변환 예시:
+    appendIn("WHERE id IN (?)", 1, 2, 3)
+    → "WHERE id IN (?, ?, ?)" + 파라미터 [1, 2, 3]
+    */
+    public Sql appendIn(String sql, Object... params) {
+        // 파라미터 개수만큼 ? 생성: Collections.nCopies(3, "?") → ["?", "?", "?"]
+        // String.join(", ", ...) → "?, ?, ?"
+        String placeholders = String.join(", ", Collections.nCopies(params.length, "?"));
+
+        // SQL의 첫 번째 ?를 치환
+        // "WHERE id IN (?)" → "WHERE id IN (?, ?, ?)"
+        String modifiedSql = sql.replaceFirst("\\?", placeholders);
+
+        append(modifiedSql);
+
+        parameters.addAll(Arrays.asList(params));
+
+        return this;
+    }
 }
