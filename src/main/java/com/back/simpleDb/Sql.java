@@ -1,6 +1,7 @@
 package com.back.simpleDb;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Sql {
@@ -171,5 +172,110 @@ public class Sql {
         }
 
         return map;
+    }
+
+    /*
+    Long 타입 단일 값 조회
+
+    구현 로직:
+    1. selectRow()로 첫 번째 행 조회
+    2. 첫 번째 컬럼 값을 Long으로 변환
+
+    - Map.values(): 모든 값의 Collection 반환
+    - iterator().next(): 첫 번째 값 가져오기
+    - instanceof: 타입 체크
+    - Number.longValue(): Long으로 변환
+    */
+    public Long selectLong() {
+        Map<String, Object> row = selectRow();
+        if (row == null || row.isEmpty()) return null;
+
+        Object value = row.values().iterator().next();
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return null;
+    }
+
+    /*
+    String 타입 단일 값 조회
+
+    구현 로직:
+    1. selectRow()로 첫 번째 행 조회
+    2. 첫 번째 컬럼 값을 String으로 변환
+    */
+    public String selectString() {
+        Map<String, Object> row = selectRow();
+        if (row == null || row.isEmpty()) return null;
+
+        Object value = row.values().iterator().next();
+        return value != null ? value.toString() : null;
+    }
+
+    /*
+    Boolean 타입 단일 값 조회
+
+    구현 로직:
+    1. Boolean 타입: 그대로 반환
+    2. Number 타입: 1이면 true, 0이면 false
+
+    MySQL 타입 변환:
+    - BIT(1) → Boolean
+    - TINYINT → Number → Boolean
+    - 1=1, 1=0 같은 표현식 → Boolean
+    */
+    public Boolean selectBoolean() {
+        Map<String, Object> row = selectRow();
+        if (row == null || row.isEmpty()) return null;
+
+        Object value = row.values().iterator().next();
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        } else if (value instanceof Number) {
+            return ((Number) value).intValue() == 1;
+        }
+        return null;
+    }
+
+    /*
+    LocalDateTime 타입 단일 값 조회
+
+    구현 로직:
+    1. LocalDateTime 타입: 그대로 반환
+    2. Timestamp 타입: toLocalDateTime()으로 변환
+    */
+    public LocalDateTime selectDatetime() {
+        Map<String, Object> row = selectRow();
+        if (row == null || row.isEmpty()) return null;
+
+        Object value = row.values().iterator().next();
+        if (value instanceof LocalDateTime) {
+            return (LocalDateTime) value;
+        } else if (value instanceof Timestamp) {
+            return ((Timestamp) value).toLocalDateTime();
+        }
+        return null;
+    }
+
+    /*
+    Long 리스트 조회
+
+    구현 로직:
+    1. selectRows()로 모든 행 조회
+    2. 각 행의 첫 번째 컬럼을 Long으로 변환
+    3. List에 담기
+    */
+    public List<Long> selectLongs() {
+        List<Map<String, Object>> rows = selectRows();
+        List<Long> result = new ArrayList<>();
+
+        for (Map<String, Object> row : rows) {
+            Object value = row.values().iterator().next();
+            if (value instanceof Number) {
+                result.add(((Number) value).longValue());
+            }
+        }
+
+        return result;
     }
 }
