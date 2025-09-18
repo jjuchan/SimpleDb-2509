@@ -1,5 +1,6 @@
 package com.back;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,5 +12,6 @@ public class Article {
     private LocalDateTime modifiedDate;
     private String title;
     private String body;
+    @JsonProperty("isBlind")
     private boolean isBlind;
 }

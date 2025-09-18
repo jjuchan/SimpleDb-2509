@@ -31,7 +31,7 @@ public class SimpleDb {
         this.username = username;
         this.password = password;
         this.dbName = dbName;
-        this.dbUrl = "jdbc:mysql://" + host + "/" + dbName + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul";
+        this.dbUrl = "jdbc:mysql://" + host + ":3306/" + dbName;
     }
 
     // 개발 모드 설정
