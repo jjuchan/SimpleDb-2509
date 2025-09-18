@@ -1,8 +1,6 @@
 package com.back.simpleDb;
 
-import com.back.Article;
 import org.junit.jupiter.api.*;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -15,7 +13,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -308,12 +305,12 @@ public class SimpleDbTest {
         SELECT COUNT(*)
         FROM article
         WHERE id BETWEEN '1' AND '3'
-        AND title LIKE CONCAT('%', '제목' '%')
+        AND title LIKE CONCAT('%', '제목', '%')
         */
         sql.append("SELECT COUNT(*)")
                 .append("FROM article")
                 .append("WHERE id BETWEEN ? AND ?", 1, 3)
-                .append("AND title LIKE CONCAT('%', ? '%')", "제목");
+                .append("AND title LIKE CONCAT('%', ?, '%')", "제목");
 
         long count = sql.selectLong();
 
@@ -416,7 +413,6 @@ public class SimpleDbTest {
         assertThat(article.isBlind()).isEqualTo(false);
     }
 
-    // 테스트 메서드를 정의하고, 테스트 이름을 지정합니다.
     @Test
     @DisplayName("use in multi threading")
     public void t017() throws InterruptedException {
