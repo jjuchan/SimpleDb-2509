@@ -1,3 +1,8 @@
 spring:
   application:
     name: back
+  datasource:
+    url: jdbc:mysql://localhost:3306/simpleDb__test?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul
+    username: root
+    password: root123414
+    driver-class-name: com.mysql.cj.jdbc.Driver
